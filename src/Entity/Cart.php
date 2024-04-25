@@ -43,6 +43,19 @@ class Cart
     }
 
     /**
+     * Removes a specific CartItem from the Cart.
+     *
+     * @param CartItem $removeItem The CartItem to be removed.
+     *
+     * @return self
+     */
+    public function removeItem(CartItem $removeItem): self
+    {
+        $this->items = array_filter($this->items, fn($item) => $item !== $removeItem);
+        return $this;
+    }
+
+    /**
      * Calculates and returns the total price of all items in the cart.
      *
      * @return float The total price of all items in the cart.
@@ -57,23 +70,6 @@ class Cart
     }
 
     /**
-     * Finds a CartItem in the cart by its product code.
-     *
-     * @param string $productCode The product code to search for.
-     *
-     * @return CartItem|null The CartItem found, or null if not found.
-     */
-    public function findCartItemByProductCode(string $productCode): ?CartItem
-    {
-        foreach ($this->items as $item) {
-            if ($item->getProduct()->getCode() === $productCode) {
-                return $item;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Checks if the cart is empty.
      *
      * @return bool True if the cart is empty, false otherwise.
@@ -81,18 +77,5 @@ class Cart
     public function isEmpty(): bool
     {
         return empty($this->items);
-    }
-
-    /**
-     * Removes a specific CartItem from the Cart.
-     *
-     * @param CartItem $removeItem The CartItem to be removed.
-     *
-     * @return self
-     */
-    public function removeItem(CartItem $removeItem): self
-    {
-        $this->items = array_filter($this->items, fn($item) => $item !== $removeItem);
-        return $this;
     }
 }

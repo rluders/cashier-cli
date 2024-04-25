@@ -2,10 +2,9 @@
 
 namespace App\Command;
 
-use App\Entity\Cart;
 use App\Entity\CartItem;
-use App\Entity\Product;
-use App\Service\DiscountService;
+use App\Service\CartService;
+use App\Service\CatalogService;
 use NumberFormatter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -32,32 +31,19 @@ class CashierCommand extends Command
     protected const string VIEW_CATALOG_OPTION = 'P';
     protected const string VIEW_CART_OPTION = 'C';
 
-
     protected bool $loop = true;
     protected string $currentState;
     protected string $previousState;
 
-    protected array $catalog = [];
-    protected Cart $cart;
-
-
     public function __construct(
-        protected DiscountService $discountService
+        protected CatalogService $catalogService,
+        protected CartService $cartService,
     ) {
         parent::__construct();
-
-        // Start empty cart
-        $this->cart = new Cart();
     }
 
     public function configure(): void
     {
-        // Just pushing some items to the "catalog". I could totally get it from SQLite
-        // do some migration, seeder, repository, or whatever... but why?
-        $this->catalog['GR1'] = new Product('GR1', 'Green Tea', 3.11);
-        $this->catalog['CF1'] = new Product('CF1', 'Coffee', 11.23);
-        $this->catalog['SR1'] = new Product('SR1', 'Strawberries', 5.00);
-
         // Default state
         $this->currentState = self::MAIN_MENU;
     }
@@ -136,9 +122,15 @@ class CashierCommand extends Command
 
             $this->renderCatalogTable($output);
 
+            // Get all product names from the catalog service
+            $productNames = array_map(fn ($item) => $item->getName(), $this->catalogService->getAllProducts());
+
+            // Add additional options for viewing cart and quitting
+            $options = array_merge($productNames, [self::VIEW_CART_OPTION => 'View Cart', self::QUIT_OPTION => 'Quit']);
+
             $question = new ChoiceQuestion(
                 'Please select a product or action:',
-                array_merge(array_map(fn ($item) => $item->getName(), $this->catalog), [self::VIEW_CART_OPTION => 'View Cart', self::QUIT_OPTION => 'Quit']),
+                $options,
                 self::VIEW_CART_OPTION
             );
             $question->setNormalizer(fn(string $value): string => $value ? strtoupper(trim($value)) : '');
@@ -156,7 +148,15 @@ class CashierCommand extends Command
             }
 
             // Add product to cart
-            $product = $this->catalog[$option];
+            $productCode = $option; // just to make it easier to read
+            $product = $this->catalogService->getProduct($productCode);
+            if ($product === null) {
+                // It should never happen, but...
+                $output->writeln('Product not found.');
+
+                $this->pressEnterToContinue($input, $output);
+                continue;
+            }
 
             // How many items?
             $question = new Question('Enter the quantity: ');
@@ -171,10 +171,10 @@ class CashierCommand extends Command
             }
 
             // Check if the product is already in the cart
-            $existingCartItem = $this->cart->findCartItemByProductCode($option);
+            $existingCartItem = $this->cartService->getItemByProductCode($product->getCode());
             if ($existingCartItem) {
                 if ($quantity === 0) {
-                    $this->cart->removeItem($existingCartItem);
+                    $this->cartService->removeItem($existingCartItem);
 
                     $output->writeln(['', '>>> Item removed from cart.', '']);
 
@@ -182,7 +182,7 @@ class CashierCommand extends Command
                     continue;
                 }
 
-                // If the product is already in the cart, update the quantity
+                // If the product is already in the cart, update the quantity.
                 $existingCartItem->setQuantity($quantity);
 
                 $output->writeln(['', '>>> Item quantity updated.', '']);
@@ -199,7 +199,7 @@ class CashierCommand extends Command
             }
 
             // Otherwise, add a new item to the cart
-            $this->cart->addItem(new CartItem($product, $quantity));
+            $this->cartService->addItem(new CartItem($product, $quantity));
 
             $output->writeln(['', '>>> Product added to cart.', '']);
 
@@ -211,7 +211,6 @@ class CashierCommand extends Command
     {
         $this->clearScreen($output); // Clear screen
 
-        $this->discountService->executeRules($this->cart);
         $this->renderCartTable($output);
 
         $helper = $this->getHelper('question');
@@ -236,7 +235,8 @@ class CashierCommand extends Command
 
     protected function renderCartTable(OutputInterface $output): void
     {
-        if ($this->cart->isEmpty()) {
+        $cart = $this->cartService->getCart();
+        if ($cart->isEmpty()) {
             $output->writeln(['', 'Empty cart', '']);
             return;
         }
@@ -244,7 +244,7 @@ class CashierCommand extends Command
         $fmt = new NumberFormatter('es_ES', NumberFormatter::CURRENCY);
 
         $rows = [];
-        foreach ($this->cart->getItems() as $item) {
+        foreach ($cart->getItems() as $item) {
             $fullPrice = $item->getFullPrice();
             $discountAmount = $fullPrice - $item->getPrice();
 
@@ -271,7 +271,7 @@ class CashierCommand extends Command
         $fmt = new NumberFormatter('es_ES', NumberFormatter::CURRENCY);
 
         $rows = [];
-        foreach ($this->catalog as $product) {
+        foreach ($this->catalogService->getAllProducts() as $product) {
             $rows[] = [
                 $product->getCode(),
                 $product->getName(),
