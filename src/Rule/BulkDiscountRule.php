@@ -15,6 +15,13 @@ class BulkDiscountRule implements DiscountRuleInterface
 
     public function execute(Cart $cart): void
     {
-        throw new \Exception('Needs to be implemented');
+        foreach ($cart->getItems() as $item) {
+            if ($item->getProduct()->getCode() === $this->productCode) {
+                if ($item->getQuantity() < $this->minQuantity) {
+                    continue;
+                }
+                $item->setPrice($this->discountedPrice * $item->getQuantity());
+            }
+        }
     }
 }
