@@ -1,0 +1,22 @@
+{
+    "name": "rluders/cli-cashier",
+    "description": "Simple CLI Cashier",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require": {
+        "symfony/console": "^7.0",
+        "ext-intl": "*"
+    },
+    "require-dev": {
+        "pestphp/pest": "^2.34"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
