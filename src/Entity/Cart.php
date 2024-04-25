@@ -82,4 +82,17 @@ class Cart
     {
         return empty($this->items);
     }
+
+    /**
+     * Removes a specific CartItem from the Cart.
+     *
+     * @param CartItem $removeItem The CartItem to be removed.
+     *
+     * @return self
+     */
+    public function removeItem(CartItem $removeItem): self
+    {
+        $this->items = array_filter($this->items, fn($item) => $item !== $removeItem);
+        return $this;
+    }
 }

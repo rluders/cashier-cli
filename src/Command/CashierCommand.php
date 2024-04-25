@@ -23,14 +23,14 @@ use Symfony\Component\Console\Question\Question;
 )]
 class CashierCommand extends Command
 {
-    protected const MAIN_MENU = 'main_menu';
-    protected const CATALOG_MENU = 'catalog_menu';
-    protected const VIEW_CART_MENU = 'view_cart_menu';
+    protected const string MAIN_MENU = 'main_menu';
+    protected const string CATALOG_MENU = 'catalog_menu';
+    protected const string VIEW_CART_MENU = 'view_cart_menu';
 
-    protected const BACK_OPTION = 'B';
-    protected const QUIT_OPTION = 'Q';
-    protected const VIEW_CATALOG_OPTION = 'P';
-    protected const VIEW_CART_OPTION = 'C';
+    protected const string BACK_OPTION = 'B';
+    protected const string QUIT_OPTION = 'Q';
+    protected const string VIEW_CATALOG_OPTION = 'P';
+    protected const string VIEW_CART_OPTION = 'C';
 
 
     protected bool $loop = true;
@@ -148,36 +148,62 @@ class CashierCommand extends Command
             if ($option === self::VIEW_CART_OPTION) {
                 $this->setCurrentState(self::VIEW_CART_MENU);
                 return;
-            } elseif ($option === self::QUIT_OPTION) {
+            }
+
+            if ($option === self::QUIT_OPTION) {
                 $this->loop = false;
                 return;
-            } else {
-                // Add product to cart
-                $product = $this->catalog[$option];
+            }
 
-                // How many items?
-                $question = new Question('Enter the quantity: ');
-                $quantity = $helper->ask($input, $output, $question);
-                $quantity = intval($quantity);
+            // Add product to cart
+            $product = $this->catalog[$option];
 
-                if ($quantity < 0) {
-                    $output->writeln('Invalid quantity. Please enter a positive number.');
-                } else {
-                    // Check if the product is already in the cart
-                    $existingCartItem = $this->cart->findCartItemByProductCode($option);
-                    if ($existingCartItem) {
-                        // If the product is already in the cart, update the quantity
-                        $existingCartItem->setQuantity($existingCartItem->getQuantity() + $quantity);
-                    } else {
-                        // Otherwise, add a new item to the cart
-                        $this->cart->addItem(new CartItem($product, $quantity));
-                    }
+            // How many items?
+            $question = new Question('Enter the quantity: ');
+            $quantity = $helper->ask($input, $output, $question);
+            $quantity = intval($quantity);
 
-                    $output->writeln(['', '>>> Product added to cart.', '']);
+            if ($quantity < 0) {
+                $output->writeln('Invalid quantity. Please enter a positive number.');
+
+                $this->pressEnterToContinue($input, $output);
+                continue;
+            }
+
+            // Check if the product is already in the cart
+            $existingCartItem = $this->cart->findCartItemByProductCode($option);
+            if ($existingCartItem) {
+                if ($quantity === 0) {
+                    $this->cart->removeItem($existingCartItem);
+
+                    $output->writeln(['', '>>> Item removed from cart.', '']);
 
                     $this->pressEnterToContinue($input, $output);
+                    continue;
                 }
+
+                // If the product is already in the cart, update the quantity
+                $existingCartItem->setQuantity($quantity);
+
+                $output->writeln(['', '>>> Item quantity updated.', '']);
+
+                $this->pressEnterToContinue($input, $output);
+                continue;
             }
+
+            if ($quantity == 0) {
+                $output->writeln(['', 'Cannot add item within given quantity to the cart.', '']);
+
+                $this->pressEnterToContinue($input, $output);
+                continue;
+            }
+
+            // Otherwise, add a new item to the cart
+            $this->cart->addItem(new CartItem($product, $quantity));
+
+            $output->writeln(['', '>>> Product added to cart.', '']);
+
+            $this->pressEnterToContinue($input, $output);
         }
     }
 
