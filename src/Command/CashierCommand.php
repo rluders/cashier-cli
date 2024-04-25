@@ -17,6 +17,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 class CashierCommand extends Command
 {
+    protected const MAIN_MENU = 'main_menu';
+    protected const CATALOG_MENU = 'catalog_menu';
+    protected const VIEW_CART_MENU = 'view_cart_menu';
+
+    protected bool $loop = true;
+    protected string $currentState;
+    protected string $previousState;
+
     protected array $catalog = [];
     protected Cart $cart;
 
@@ -37,12 +45,54 @@ class CashierCommand extends Command
         $this->catalog['GR1'] = new Product('GR1', 'Green Tea', 3.11);
         $this->catalog['CF1'] = new Product('CF1', 'Coffee', 11.23);
         $this->catalog['SR1'] = new Product('SR1', 'Strawberries', 5.00);
+
+        // Default state
+        $this->currentState = self::MAIN_MENU;
     }
 
+    protected function setCurrentState(string $state): void
+    {
+        $this->previousState = $this->currentState;
+        $this->currentState = $state;
+    }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        while ($this->loop) {
+            switch ($this->currentState) {
+                case self::MAIN_MENU:
+                    $this->showMainMenu($input, $output);
+                    break;
+                case self::CATALOG_MENU:
+                    $this->showCatalogMenu($input, $output);
+                    break;
+                case self::VIEW_CART_MENU:
+                    $this->showViewCartMenu($input, $output);
+                    break;
+            }
+        }
+
         $output->writeln('Quitting. Cart cleared.');
         return Command::SUCCESS;
+    }
+
+    protected function showMainMenu(InputInterface $input, OutputInterface $output): void
+    {
+        $output->writeln([
+            '=====================',
+            ' Welcome to the Shop ',
+            '=====================',
+            '',
+        ]);
+    }
+
+    protected function showCatalogMenu(InputInterface $input, OutputInterface $output): void
+    {
+        throw \Exception('Needs to be implemented');
+    }
+
+    protected function showViewCartMenu(InputInterface $input, OutputInterface $output): void
+    {
+        throw \Exception('Needs to be implemented');
     }
 }
