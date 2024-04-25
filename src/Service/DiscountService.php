@@ -11,11 +11,15 @@ class DiscountService
 
     public function addRules(DiscountRuleInterface ...$rules): void
     {
-        throw new \Exception("Needs to be implemented");
+        foreach ($rules as $rule) {
+            $this->rules[] = $rule;
+        }
     }
 
     public function executeRules(Cart $cart): void
     {
-        throw new \Exception("Needs to be implemented");
+        foreach ($this->rules as $rule) {
+            $rule->execute($cart);
+        }
     }
 }
