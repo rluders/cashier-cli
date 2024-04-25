@@ -60,3 +60,8 @@ $RECYCLE.BIN/
 
 ### VSCode ###
 .vscode
+
+### PHPDocs ###
+phpDocumentor.phar
+docs/
+.phpdoc
