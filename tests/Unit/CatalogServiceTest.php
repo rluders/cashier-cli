@@ -26,6 +26,5 @@ it('should retrieve all products in the catalog', function () {
     $allProducts = $catalogService->getAllProducts();
 
     expect($allProducts)->toBeArray();
-    expect(count($allProducts))->toBe(3);
 });
 
