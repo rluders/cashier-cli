@@ -26,8 +26,6 @@ class CartService
         /** @var DiscountService The discount service used to apply discounts to the cart. **/
         protected DiscountService $discountService
     ) {
-        $this->discountService = $discountService;
-
         // In this case we can only have one cart, and this is fine.
         $this->cart = new Cart();
     }
