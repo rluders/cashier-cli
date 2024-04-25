@@ -1,5 +1,5 @@
 {
-    "name": "rluders/cli-cashier",
+    "name": "rluders/cashier-cli",
     "description": "Simple CLI Cashier",
     "license": "MIT",
     "autoload": {
