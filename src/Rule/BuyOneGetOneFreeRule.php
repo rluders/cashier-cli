@@ -13,6 +13,11 @@ class BuyOneGetOneFreeRule implements DiscountRuleInterface
 
     public function execute(Cart $cart): void
     {
-        throw new \Exception('Needs to be implemented');
+        foreach ($cart->getItems() as $item) {
+            if ($item->getProduct()->getCode() === $this->productCode) {
+                $quantity = $item->getQuantity() - intdiv($item->getQuantity(), 2);
+                $item->setPrice($item->getProduct()->getPrice() * $quantity);
+            }
+        }
     }
 }
