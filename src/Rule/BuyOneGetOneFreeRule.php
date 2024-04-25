@@ -9,7 +9,7 @@ use App\Entity\Cart;
  *
  * Represents a discount rule that applies a "buy one, get one free" offer to a specific product in a cart.
  */
-class BuyOneGetOneFreeRule implements DiscountRuleInterface
+readonly class BuyOneGetOneFreeRule implements DiscountRuleInterface
 {
     /**
      * BuyOneGetOneFreeRule constructor.
@@ -17,7 +17,7 @@ class BuyOneGetOneFreeRule implements DiscountRuleInterface
      * @param string $productCode The product code to which the "buy one, get one free" offer applies.
      */
     public function __construct(
-        readonly protected string $productCode
+        protected string $productCode
     ) {}
 
     /**

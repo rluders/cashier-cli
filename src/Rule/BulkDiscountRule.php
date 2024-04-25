@@ -9,7 +9,7 @@ use App\Entity\Cart;
  *
  * Represents a discount rule that applies bulk discounts to specific products in a cart.
  */
-class BulkDiscountRule implements DiscountRuleInterface
+readonly class BulkDiscountRule implements DiscountRuleInterface
 {
     /**
      * BulkDiscountRule constructor.
@@ -19,9 +19,9 @@ class BulkDiscountRule implements DiscountRuleInterface
      * @param float $discountedPrice The discounted price to be set for each item meeting the minimum quantity requirement.
      */
     public function __construct(
-        readonly private string $productCode,
-        readonly private float $minQuantity,
-        readonly private float $discountedPrice
+        private string $productCode,
+        private float $minQuantity,
+        private float $discountedPrice
     ) {}
 
     /**
