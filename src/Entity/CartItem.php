@@ -89,4 +89,14 @@ class CartItem
         $this->price = $price;
         return $this;
     }
+
+    /**
+     * Calculates the total price for the cart item.
+     *
+     * @return float The total price of the cart item, calculated by multiplying the price of the product by the quantity.
+     */
+    public function getFullPrice(): float
+    {
+        return $this->product->getPrice() * $this->quantity;
+    }
 }

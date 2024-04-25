@@ -245,17 +245,22 @@ class CashierCommand extends Command
 
         $rows = [];
         foreach ($this->cart->getItems() as $item) {
+            $fullPrice = $item->getFullPrice();
+            $discountAmount = $fullPrice - $item->getPrice();
+
             $rows[] = [
                 $item->getProduct()->getCode(),
                 $item->getProduct()->getName(),
                 $item->getQuantity(),
+                numfmt_format_currency($fmt, $fullPrice, 'EUR'),
+                numfmt_format_currency($fmt, $discountAmount, 'EUR'),
                 numfmt_format_currency($fmt, $item->getPrice(), 'EUR'),
             ];
         }
 
         $table = new Table($output);
         $table
-            ->setHeaders(['Code', 'Name', 'Quantity', 'Price'])
+            ->setHeaders(['Code', 'Name', 'Quantity', 'Price', 'Discount', 'Final Price'])
             ->setRows($rows);
 
         $table->render();
