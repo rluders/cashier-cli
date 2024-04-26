@@ -15,6 +15,11 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 
+/**
+ * Class CashierCommand
+ *
+ * Command-line interface command for managing a shopping cashier.
+ */
 #[AsCommand(
     name: 'cashier',
     description: 'CLI Cashier Command',
@@ -22,38 +27,101 @@ use Symfony\Component\Console\Question\Question;
 )]
 class CashierCommand extends Command
 {
+    /**
+     * @var string The main menu state.
+     */
     protected const string MAIN_MENU = 'main_menu';
+
+    /**
+     * @var string The catalog menu state.
+     */
     protected const string CATALOG_MENU = 'catalog_menu';
+
+    /**
+     * @var string The view cart menu state.
+     */
     protected const string VIEW_CART_MENU = 'view_cart_menu';
 
+    /**
+     * @var string The back option.
+     */
     protected const string BACK_OPTION = 'B';
+
+    /**
+     * @var string The quit option.
+     */
     protected const string QUIT_OPTION = 'Q';
+
+    /**
+     * @var string The view catalog option.
+     */
     protected const string VIEW_CATALOG_OPTION = 'P';
+
+    /**
+     * @var string The view cart option.
+     */
     protected const string VIEW_CART_OPTION = 'C';
 
+    /**
+     * @var bool A flag indicating whether the command loop should continue.
+     */
     protected bool $loop = true;
+
+    /**
+     * @var string The current state of the command execution.
+     */
     protected string $currentState;
+
+    /**
+     * @var string The previous state of the command execution.
+     */
     protected string $previousState;
 
+    /**
+     * CashierCommand constructor.
+     *
+     * Initializes the CashierCommand with the provided catalog service and cart service.
+     *
+     * @param CatalogService $catalogService The service responsible for managing the catalog of products.
+     * @param CartService $cartService The service responsible for managing the shopping cart.
+     */
     public function __construct(
+        /** @var CatalogService The catalog service used to retrieve products. **/
         protected CatalogService $catalogService,
-        protected CartService $cartService,
+        /** @var CartService The cart service used to manage the shopping cart. **/
+        protected CartService $cartService
     ) {
         parent::__construct();
     }
 
+    /**
+     * Configures the command.
+     */
     public function configure(): void
     {
         // Default state
         $this->currentState = self::MAIN_MENU;
     }
 
+    /**
+     * Sets the current state of the command execution.
+     *
+     * @param string $state The new state.
+     */
     protected function setCurrentState(string $state): void
     {
         $this->previousState = $this->currentState;
         $this->currentState = $state;
     }
 
+    /**
+     * Executes the command.
+     *
+     * @param InputInterface $input The input interface.
+     * @param OutputInterface $output The output interface.
+     *
+     * @return int The command exit code.
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         while ($this->loop) {
@@ -76,6 +144,12 @@ class CashierCommand extends Command
         return Command::SUCCESS;
     }
 
+    /**
+     * Displays the main menu.
+     *
+     * @param InputInterface $input The input interface.
+     * @param OutputInterface $output The output interface.
+     */
     protected function showMainMenu(InputInterface $input, OutputInterface $output): void
     {
         $output->writeln([
@@ -112,6 +186,12 @@ class CashierCommand extends Command
         }
     }
 
+    /**
+     * Displays the catalog menu.
+     *
+     * @param InputInterface $input The input interface.
+     * @param OutputInterface $output The output interface.
+     */
     protected function showCatalogMenu(InputInterface $input, OutputInterface $output): void
     {
         $helper = $this->getHelper('question');
@@ -207,6 +287,12 @@ class CashierCommand extends Command
         }
     }
 
+    /**
+     * Displays the view cart menu.
+     *
+     * @param InputInterface $input The input interface.
+     * @param OutputInterface $output The output interface.
+     */
     protected function showViewCartMenu(InputInterface $input, OutputInterface $output): void
     {
         $this->clearScreen($output); // Clear screen
@@ -233,6 +319,11 @@ class CashierCommand extends Command
         }
     }
 
+    /**
+     * Renders the cart table.
+     *
+     * @param OutputInterface $output The output interface.
+     */
     protected function renderCartTable(OutputInterface $output): void
     {
         $cart = $this->cartService->getCart();
@@ -266,6 +357,11 @@ class CashierCommand extends Command
         $table->render();
     }
 
+    /**
+     * Renders the catalog table.
+     *
+     * @param OutputInterface $output The output interface.
+     */
     protected function renderCatalogTable(OutputInterface $output): void
     {
         $fmt = new NumberFormatter('es_ES', NumberFormatter::CURRENCY);
@@ -287,11 +383,22 @@ class CashierCommand extends Command
         $table->render();
     }
 
+    /**
+     * Clears the screen.
+     *
+     * @param OutputInterface $output The output interface.
+     */
     protected function clearScreen(OutputInterface $output): void
     {
         $output->write("\033\143");
     }
 
+    /**
+     * Waits for user confirmation to continue.
+     *
+     * @param InputInterface $input The input interface.
+     * @param OutputInterface $output The output interface.
+     */
     public function pressEnterToContinue(InputInterface $input, OutputInterface $output): void
     {
         $helper = $this->getHelper('question');
