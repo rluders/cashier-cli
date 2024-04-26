@@ -355,6 +355,9 @@ class CashierCommand extends Command
             ->setRows($rows);
 
         $table->render();
+
+        $totalPrice = numfmt_format_currency($fmt, $this->cartService->getCart()->getTotalPrice(), 'EUR');
+        $output->writeln(['', "Total price is: $totalPrice", '']);
     }
 
     /**
